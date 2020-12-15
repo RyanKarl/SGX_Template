@@ -33,45 +33,17 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <vector>
+
 # include <unistd.h>
 # include <pwd.h>
 # define MAX_PATH FILENAME_MAX
-# define BUFFER_SIZE 100
+
 #include "sgx_urts.h"
 #include "App.h"
 #include "Enclave_u.h"
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <fstream>
-#include <openssl/evp.h>
-
-using namespace std;
-
-
-#define HASH_LEN 64
-#define SIZEOF_SEED 4
 
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
-
-unsigned char md_value_out[EVP_MAX_MD_SIZE];
-unsigned int md_len_out;
-
- 
-void printArray (int arr[], int n)
-{
-    for (int i = 0; i < n; i++)
-        printf("%d ", arr[i]);
-    
-    printf("\n");
-}
-
-
 
 typedef struct _sgx_errlist_t {
     sgx_status_t err;
@@ -262,7 +234,6 @@ int SGX_CDECL main(int argc, char *argv[])
     (void)(argc);
     (void)(argv);
 
-    int num_users = atoi(argv[1]);
 
     /* Initialize the enclave */
     if(initialize_enclave() < 0){
@@ -270,17 +241,19 @@ int SGX_CDECL main(int argc, char *argv[])
         getchar();
         return -1; 
     }
-
-    setup_phase(global_eid, seed_ptr, BUFFER_SIZE, num_users);   
-
  
-    int *ciphertext_ptr = (int *) malloc(BUFFER_SIZE * sizeof(int));
+    printf("Print Hello World in Enclave\n");
+    printf_helloworld(global_eid);
+    printf("Returned from ecall\n");
 
-    //Send ciphertexts to Enclave
-    compute_histogram(global_eid, ciphertext_ptr, BUFFER_SIZE, num_users);
+    int num1 = 2;
+    int num2 = 2;
+    int sum = 0;
+    uint32_t len = sizeof(sum);
 
-    cout << endl;
+    add_in_enclave(global_eid, num1, num2, &sum, len);
 
+    printf("Returned from add_in_enclave ecall\nSum computed is %i + %i = %i\n", num1, num2, sum);
 
     /* Destroy the enclave */
     sgx_destroy_enclave(global_eid);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 Intel Corporation. All rights reserved.
+ * Copyright (C) 2011-2018 Intel Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,17 +29,38 @@
  *
  */
 
-/* sgx_tssl.edl - Top EDL file. */
 
-enclave {
-    
-    from "sgx_tstdc.edl" import *;
-    
-    untrusted {
-    	 void u_sgxssl_ftime([out, size=timeb_len] void * timeptr, uint32_t timeb_len);
-    };
+#include <stdarg.h>
+#include <stdio.h>      /* vsnprintf */
 
-    trusted {
+#include "Enclave.h"
+#include "Enclave_t.h"  /* print_string */
 
-    };
-};
+/* 
+ * printf: 
+ *   Invokes OCALL to display the enclave buffer to the terminal.
+ */
+void printf(const char *fmt, ...)
+{
+    char buf[BUFSIZ] = {'\0'};
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(buf, BUFSIZ, fmt, ap);
+    va_end(ap);
+    ocall_print_string(buf);
+}
+
+void printf_helloworld()
+{
+    printf("Hello World\n");
+}
+
+void add_in_enclave(int num1, int num2, int *sum, uint32_t len)
+{
+    printf("Entered add_in_enclave ecall\n");
+    *sum = num1 + num2;  
+    printf("Computed %i + %i = %i\n", num1, num2, *sum);
+
+    return;
+}
+

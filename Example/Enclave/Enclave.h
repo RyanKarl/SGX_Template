@@ -29,64 +29,22 @@
  *
  */
 
-#include <stdarg.h>
-#include <stdio.h>      /* vsnprintf */
-#include <string>
-#include <string.h>
-#include <sgx_trts.h>
-#include "Enclave.h"
-#include "Enclave_t.h"  /* print_string */
-#include <vector>
-#include <openssl/evp.h>
-#include <iostream>
-#include "sgx_tcrypto.h"
-#define HASH_LEN 64
-#define SIZEOF_SEED 4
 
-using namespace std;
+#ifndef _ENCLAVE_H_
+#define _ENCLAVE_H_
 
-unsigned char md_value[EVP_MAX_MD_SIZE];
-unsigned int md_len;
+#include <stdlib.h>
+#include <assert.h>
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
-/* 
- * printf: 
- *   Invokes OCALL to display the enclave buffer to the terminal.
- */
-void printf(const char *fmt, ...)
-{
-    char buf[BUFSIZ] = {'\0'};
-    va_list ap;
-    va_start(ap, fmt);
-    vsnprintf(buf, BUFSIZ, fmt, ap);
-    va_end(ap);
-    ocall_print_string(buf);
+void printf(const char *fmt, ...);
+void printf_helloworld();
+
+#if defined(__cplusplus)
 }
+#endif
 
-//Initialize Enclave with seeds and random mappings
-void setup_phase(uint32_t *p_return_ptr, size_t len, int num)
-{
-    user_struct temp_struct;   
-    uint32_t *p_ints = (uint32_t *) malloc(len*sizeof(uint32_t));
-    uint32_t r;
-    unsigned char *ret_hash;
-
-    
-    //Copy seeds to return to users
-    memcpy(p_return_ptr, p_ints, len);
-    free(p_ints);
-
-    return;
-
-}
-
-//Function to compute histogram
-void compute_histogram(int *cipher_arr, size_t len, int num){
-
-    int *p_ints = (int *) calloc(len, sizeof(int));
-
-    free(p_ints);
-
-    return;
-
-}
+#endif /* !_ENCLAVE_H_ */

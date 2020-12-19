@@ -28,15 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+ 
+//To compile a non-SGX version, use this command:
+// g++ App/App.cpp Enclave/Enclave.cpp -pedantic -Wall  -O3 -o ./app -lm -DNOENCLAVE
+//Use the NOENCLAVE macro as appropriate to strip out SGX-specific code.
+//See main function for examples on how to modify ECALLs
 
 
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <cstdint>
 
 # include <unistd.h>
 # include <pwd.h>
 # define MAX_PATH FILENAME_MAX
+
+#ifndef NOENCLAVE
 
 #include "sgx_urts.h"
 #include "App.h"
@@ -218,6 +226,10 @@ int initialize_enclave(void)
     return 0;
 }
 
+#else
+# include "../Enclave/Enclave.h"
+#endif //End NENCLAVE
+
 /* OCall functions */
 void ocall_print_string(const char *str)
 {
@@ -229,21 +241,31 @@ void ocall_print_string(const char *str)
 
 
 /* Application entry */
+#ifdef NOENCLAVE
+int main(int argc, char ** argv)
+#else
 int SGX_CDECL main(int argc, char *argv[])
+#endif
 {
     (void)(argc);
     (void)(argv);
 
-
+#ifndef NOENCLAVE
     /* Initialize the enclave */
     if(initialize_enclave() < 0){
         printf("Enter a character before exit ...\n");
         getchar();
         return -1; 
     }
+#endif    
  
     printf("Print Hello World in Enclave\n");
+#ifndef NOENCLAVE    
     printf_helloworld(global_eid);
+#else
+    printf_helloworld();
+#endif    
+    
     printf("Returned from ecall\n");
 
     int num1 = 2;
@@ -251,12 +273,18 @@ int SGX_CDECL main(int argc, char *argv[])
     int sum = 0;
     uint32_t len = sizeof(sum);
 
+#ifndef NOENCLAVE
     add_in_enclave(global_eid, num1, num2, &sum, len);
+#else
+    add_in_enclave(num1, num2, &sum, len);
+#endif    
 
     printf("Returned from add_in_enclave ecall\nSum computed is %i + %i = %i\n", num1, num2, sum);
 
+#ifndef NOENCLAVE
     /* Destroy the enclave */
     sgx_destroy_enclave(global_eid);
+#endif    
     
     return 0;
 }

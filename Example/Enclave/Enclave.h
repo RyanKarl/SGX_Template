@@ -35,13 +35,19 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <stdint.h>
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-void printf(const char *fmt, ...);
-void printf_helloworld();
+#ifndef NOENCLAVE
+void printf(const char *fmt, ...); //This can't appear in a non-enclave version, because regular C printf already exists
+#endif
+
+void printf_helloworld(); 
+
+void add_in_enclave(int num1, int num2, int *sum, uint32_t len);
 
 #if defined(__cplusplus)
 }

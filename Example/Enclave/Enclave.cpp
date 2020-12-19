@@ -34,12 +34,16 @@
 #include <stdio.h>      /* vsnprintf */
 
 #include "Enclave.h"
-#include "Enclave_t.h"  /* print_string */
+
+#ifndef NOENCLAVE
+# include "Enclave_t.h"  /* print_string */
+#endif
 
 /* 
  * printf: 
  *   Invokes OCALL to display the enclave buffer to the terminal.
  */
+#ifndef NOENCLAVE 
 void printf(const char *fmt, ...)
 {
     char buf[BUFSIZ] = {'\0'};
@@ -49,6 +53,7 @@ void printf(const char *fmt, ...)
     va_end(ap);
     ocall_print_string(buf);
 }
+#endif
 
 void printf_helloworld()
 {
